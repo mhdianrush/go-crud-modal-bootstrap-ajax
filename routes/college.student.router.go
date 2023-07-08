@@ -9,4 +9,6 @@ func NewRouter(r *mux.Router) {
 	router := r.PathPrefix("/student").Subrouter()
 
 	router.HandleFunc("", collegestudentcontroller.Index)
+	router.HandleFunc("/collegestudent/get_form", collegestudentcontroller.GetForm)
+	
 }

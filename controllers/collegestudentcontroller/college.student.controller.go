@@ -51,3 +51,11 @@ func GetData() string {
 	temp.ExecuteTemplate(buffer, "data.html", data)
 	return buffer.String()
 }
+
+func GetForm(w http.ResponseWriter, r *http.Request) {
+	temp, err := template.ParseFiles("views/collegestudent/form.html")
+	if err != nil {
+		panic(err)
+	}
+	temp.Execute(w, nil)
+}
