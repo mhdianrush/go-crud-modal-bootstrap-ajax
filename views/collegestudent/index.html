@@ -49,8 +49,8 @@
     </nav>
     <!-- End of Navbar -->
     <div class="container mt-5">
-      <table class="table mt-3 table-bordered table-info">
-        <thead>
+      <table class="table mt-3 table-bordered">
+        <thead class="table table-info">
           <th>#</th>
           <th>Full Name</th>
           <th>L/P</th>
@@ -58,6 +58,7 @@
           <th>Address</th>
           <th>Action</th>
         </thead>
+        {{ .data }}
       </table>
     </div>
     <script
