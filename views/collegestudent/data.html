@@ -8,8 +8,8 @@
   <td>{{ .BirthPlace }}, {{ .BirthDay }}</td>
   <td>{{ .Address }}</td>
   <td>
-    <button class="btn btn-danger btn-sm">Delete</button>
-    <button class="btn btn-warning btn-sm">Edit</button>
+    <button data-id="{{ .Id }}" class="btn btn-danger btn-sm delete-collegestudent">Delete</button>
+    <button data-id="{{ .Id }}" class="btn btn-warning btn-sm edit-collegestudent">Edit</button>
   </td>
 </tr>
 {{ end }}

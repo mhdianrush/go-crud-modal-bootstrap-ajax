@@ -20,6 +20,7 @@ func main() {
 	r.HandleFunc("/collegestudent", collegestudentcontroller.Index)
 	r.HandleFunc("/collegestudent/get_form", collegestudentcontroller.GetForm)
 	r.HandleFunc("/collegestudent/store", collegestudentcontroller.Store)
+	r.HandleFunc("/collegestudent/delete", collegestudentcontroller.Delete)
 
 	logger := logrus.New()
 	file, err := os.OpenFile("application.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)

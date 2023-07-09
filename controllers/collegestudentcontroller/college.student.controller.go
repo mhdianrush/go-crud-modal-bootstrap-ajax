@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/mhdianrush/go-crud-modal-bootstrap-ajax/entities"
@@ -54,11 +55,35 @@ func GetData() string {
 }
 
 func GetForm(w http.ResponseWriter, r *http.Request) {
+	// to get id for edit
+	queryString := r.URL.Query().Get("id")
+	id, err := strconv.ParseInt(queryString, 10, 64)
+
+	var data map[string]any
+
+	if err != nil {
+		data = map[string]any{
+			"title": "add college student data",
+		}
+	} else {
+		var collegestudent entities.CollegeStudent
+
+		err = collegestudentmodel.NewCollegeStudentModel().Find(id, &collegestudent)
+		if err != nil {
+			panic(err)
+		}
+
+		data = map[string]any{
+			"title":          "edit college student data",
+			"collegestudent": collegestudent,
+		}
+	}
+
 	temp, err := template.ParseFiles("views/collegestudent/form.html")
 	if err != nil {
 		panic(err)
 	}
-	temp.Execute(w, nil)
+	temp.Execute(w, data)
 }
 
 func Store(w http.ResponseWriter, r *http.Request) {
@@ -67,20 +92,40 @@ func Store(w http.ResponseWriter, r *http.Request) {
 
 		var collegestudent entities.CollegeStudent
 
-		collegestudent.FullName = r.Form.Get("full_name")
-		collegestudent.Gender = r.Form.Get("gender")
-		collegestudent.BirthPlace = r.Form.Get("birth_place")
-		collegestudent.BirthDay = r.Form.Get("birth_day")
-		collegestudent.Address = r.Form.Get("address")
+		collegestudent.FullName = r.FormValue("full_name")
+		collegestudent.Gender = r.FormValue("gender")
+		collegestudent.BirthPlace = r.FormValue("birth_place")
+		collegestudent.BirthDay = r.FormValue("birth_day")
+		collegestudent.Address = r.FormValue("address")
 
-		err := collegestudentmodel.NewCollegeStudentModel().Create(&collegestudent)
+		// to check if there is exist an id in the URL
+		id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64)
+
+		var data map[string]any
+
 		if err != nil {
-			ResponseError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		data := map[string]any{
-			"message": "data has been saved",
-			"data":    template.HTML(GetData()),
+			// if id isn't exist ==> Create
+			err = collegestudentmodel.NewCollegeStudentModel().Create(&collegestudent)
+			if err != nil {
+				ResponseError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			data = map[string]any{
+				"message": "data has been saved",
+				"data":    template.HTML(GetData()),
+			}
+		} else {
+			// if id exist ==> Update
+			collegestudent.Id = id
+			err = collegestudentmodel.NewCollegeStudentModel().Update(collegestudent)
+			if err != nil {
+				ResponseError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			data = map[string]any{
+				"message": "data has been changed",
+				"data":    template.HTML(GetData()),
+			}
 		}
 		ResponseJson(w, http.StatusOK, data)
 	}
@@ -95,4 +140,22 @@ func ResponseJson(w http.ResponseWriter, code int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+}
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	id, err := strconv.ParseInt(r.Form.Get("id"), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	err = collegestudentmodel.NewCollegeStudentModel().Delete(id)
+	if err != nil {
+		panic(err)
+	}
+	data := map[string]any{
+		"message": "data successfully deleted",
+		"data":    template.HTML(GetData()),
+	}
+	ResponseJson(w, http.StatusOK, data)
 }

@@ -94,6 +94,25 @@
             $("#modalcollegestudent").html(html).modal("show");
           });
         });
+
+        $(document).on("click", ".edit-collegestudent", function () {
+          var id = $(this).attr("data-id");
+          $.get(site_url + "collegestudent/get_form?id=" + id, function (html) {
+            $("#modalcollegestudent").html(html).modal("show");
+          });
+        });
+
+        $(document).on("click", ".delete-collegestudent", function () {
+          var id = $(this).attr("data-id");
+          var confirmDelete = confirm("are you sure to delete this data ?");
+          if (confirmDelete == true) {
+            $.post(site_url + "collegestudent/delete?id=" + id, function(response){
+              alert(response.message)
+              $('tbody').html(response.data);
+            }, 'JSON');
+          }
+        });
+
         $(document).on("submit", "#form-collegestudent", function (e) {
           e.preventDefault();
           $.ajax({
@@ -102,7 +121,9 @@
             data: $(this).serialize(),
             dataType: "json",
             success: function (response) {
-              console.log("response");
+              $("tbody").html(response.data);
+              alert(response.message);
+              $("#modalcollegestudent").modal("hide");
             },
             error: function (response) {
               console.log(response);

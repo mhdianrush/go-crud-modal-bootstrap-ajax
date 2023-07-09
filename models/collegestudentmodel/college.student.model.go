@@ -61,3 +61,45 @@ func (c *CollegeStudentModel) Create(collegestudent *entities.CollegeStudent) er
 	collegestudent.Id = lastInsertId
 	return nil
 }
+
+func (c *CollegeStudentModel) Find(id int64, collegestudent *entities.CollegeStudent) error {
+	row := c.DB.QueryRow("select * from collegestudent where id = ?", id)
+	return row.Scan(
+		&collegestudent.Id,
+		&collegestudent.FullName,
+		&collegestudent.Gender,
+		&collegestudent.BirthPlace,
+		&collegestudent.BirthDay,
+		&collegestudent.Address,
+	)
+}
+
+func (c *CollegeStudentModel) Update(collegestudent entities.CollegeStudent) error {
+	_, err := c.DB.Exec(
+		`update collegestudent set
+		full_name = ?,
+		gender = ?,
+		birth_place = ?,
+		birth_day = ?,
+		address = ?
+		where id = ?`,
+		collegestudent.FullName,
+		collegestudent.Gender,
+		collegestudent.BirthPlace,
+		collegestudent.BirthDay,
+		collegestudent.Address,
+		collegestudent.Id,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *CollegeStudentModel) Delete(id int64) error {
+	_, err := c.DB.Exec(`delete from collegestudent where id = ?`, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
