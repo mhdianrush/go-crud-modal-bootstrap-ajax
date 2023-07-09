@@ -2,6 +2,7 @@ package collegestudentcontroller
 
 import (
 	"bytes"
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"time"
@@ -31,21 +32,21 @@ func GetData() string {
 		},
 	}).ParseFiles("views/collegestudent/data.html")
 
-	var CollegeStudent []entities.CollegeStudent
+	var collegestudent []entities.CollegeStudent
 
-	err := collegestudentmodel.NewCollegeStudentModel().FindAll(&CollegeStudent)
+	err := collegestudentmodel.NewCollegeStudentModel().FindAll(&collegestudent)
 	if err != nil {
 		panic(err)
 	}
 
-	for i := range CollegeStudent {
+	for i := range collegestudent {
 		// 20006-01-02 is a default number to construct
-		dateTime, _ := time.Parse("2006-01-02T00:00:00Z", CollegeStudent[i].BirthDay)
-		CollegeStudent[i].BirthDay = dateTime.Format("02-01-2006")
+		dateTime, _ := time.Parse("2006-01-02T00:00:00Z", collegestudent[i].BirthDay)
+		collegestudent[i].BirthDay = dateTime.Format("02-01-2006")
 	}
 
 	data := map[string]any{
-		"collegestudent": CollegeStudent,
+		"collegestudent": collegestudent,
 	}
 
 	temp.ExecuteTemplate(buffer, "data.html", data)
@@ -58,4 +59,40 @@ func GetForm(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	temp.Execute(w, nil)
+}
+
+func Store(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+
+		var collegestudent entities.CollegeStudent
+
+		collegestudent.FullName = r.Form.Get("full_name")
+		collegestudent.Gender = r.Form.Get("gender")
+		collegestudent.BirthPlace = r.Form.Get("birth_place")
+		collegestudent.BirthDay = r.Form.Get("birth_day")
+		collegestudent.Address = r.Form.Get("address")
+
+		err := collegestudentmodel.NewCollegeStudentModel().Create(&collegestudent)
+		if err != nil {
+			ResponseError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		data := map[string]any{
+			"message": "data has been saved",
+			"data":    template.HTML(GetData()),
+		}
+		ResponseJson(w, http.StatusOK, data)
+	}
+}
+
+func ResponseError(w http.ResponseWriter, code int, message string) {
+	ResponseJson(w, code, map[string]string{"Error": message})
+}
+
+func ResponseJson(w http.ResponseWriter, code int, payload any) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }

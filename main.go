@@ -5,10 +5,10 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/gorilla/mux"
+
 	"github.com/mhdianrush/go-crud-modal-bootstrap-ajax/config"
-	"github.com/mhdianrush/go-crud-modal-bootstrap-ajax/routes"
+	"github.com/mhdianrush/go-crud-modal-bootstrap-ajax/controllers/collegestudentcontroller"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,8 +16,10 @@ func main() {
 	config.ConnectDB()
 
 	r := mux.NewRouter()
-	router := r.PathPrefix("/api").Subrouter()
-	routes.NewRouter(router)
+
+	r.HandleFunc("/collegestudent", collegestudentcontroller.Index)
+	r.HandleFunc("/collegestudent/get_form", collegestudentcontroller.GetForm)
+	r.HandleFunc("/collegestudent/store", collegestudentcontroller.Store)
 
 	logger := logrus.New()
 	file, err := os.OpenFile("application.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -30,7 +32,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    ":8080",
-		Handler: router,
+		Handler: r,
 	}
 
 	err = server.ListenAndServe()
