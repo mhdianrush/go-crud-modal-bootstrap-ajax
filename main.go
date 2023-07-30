@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 
 	"github.com/mhdianrush/go-crud-modal-bootstrap-ajax/config"
 	"github.com/mhdianrush/go-crud-modal-bootstrap-ajax/controllers/collegestudentcontroller"
@@ -29,15 +30,18 @@ func main() {
 	}
 	logger.SetOutput(file)
 
-	logger.Println("Server Running on Port 8080")
+	if err := godotenv.Load(); err != nil {
+		logger.Printf("failed load env file %s", err.Error())
+	}
 
 	server := http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + os.Getenv("SERVER_PORT"),
 		Handler: r,
 	}
 
-	err = server.ListenAndServe()
-	if err != nil {
-		panic(err)
+	if err = server.ListenAndServe(); err != nil {
+		logger.Printf("failed connect to server %s", err.Error())
 	}
+
+	logger.Printf("Server Running on Port %s", os.Getenv("SERVER_PORT"))
 }
